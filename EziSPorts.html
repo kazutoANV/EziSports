@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>EziSPorts</title>
+<style>
+  :root { --bg:#fff; --surface:#f5f8ff; --text:#0f172a; --muted:#64748b; --blue:#2563eb; --blue-dark:#1d4ed8; --border:#e2e8f0; --danger:#dc2626; --ok:#16a34a;
+    box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); }
+  * { box-sizing:border-box; }
+  html,body { height:100%; margin:0; }
+  body { font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--text); }
+  .hidden { display:none !important; }
+  input,select { font:inherit; }
+
+  /* AUTH */
+  #auth { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; background:linear-gradient(135deg,#eff6ff 0%,#fff 60%); }
+  .auth-card { width:100%; max-width:400px; background:#fff; border:1px solid var(--border); border-radius:20px; padding:32px; box-shadow:0 20px 50px rgba(37,99,235,.10); }
+  .auth-logo { font-size:1.6rem; font-weight:800; color:var(--blue); text-align:center; }
+  .auth-sub { text-align:center; color:var(--muted); margin:4px 0 24px; font-size:.95rem; }
+  .tabs { display:grid; grid-template-columns:1fr 1fr; background:var(--surface); border-radius:12px; padding:4px; margin-bottom:20px; }
+  .tab { border:0; background:transparent; padding:10px; border-radius:9px; font-weight:600; color:var(--muted); cursor:pointer; }
+  .tab.active { background:#fff; color:var(--blue); box-shadow:0 2px 8px rgba(0,0,0,.06); }
+  label { display:block; font-size:.85rem; font-weight:600; margin:14px 0 6px; }
+  input[type=text],input[type=email],input[type=password],input[type=search] { width:100%; padding:12px 14px; border:1px solid var(--border); border-radius:12px; font-size:1rem; background:#fff; color:var(--text); outline:none; transition:border-color .2s,box-shadow .2s; }
+  input:focus { border-color:var(--blue); box-shadow:0 0 0 4px rgba(37,99,235,.12); }
+  .meter { height:6px; background:var(--border); border-radius:6px; margin-top:8px; overflow:hidden; }
+  .meter div { height:100%; width:0; transition:width .3s,background .3s; }
+  .hint { font-size:.8rem; color:var(--muted); margin-top:6px; }
+  .btn { width:100%; margin-top:20px; padding:13px; border:0; border-radius:12px; background:var(--blue); color:#fff; font-size:1rem; font-weight:700; cursor:pointer; transition:background .2s,transform .1s; }
+  .btn:hover { background:var(--blue-dark); } .btn:active { transform:scale(.99); }
+  .msg { margin-top:14px; font-size:.9rem; text-align:center; min-height:1.2em; }
+  .msg.err { color:var(--danger); } .msg.ok { color:var(--ok); }
+  .secure { display:flex; align-items:center; justify-content:center; gap:6px; margin-top:18px; font-size:.78rem; color:var(--muted); }
+
+  /* APP */
+  #app { display:flex; min-height:100vh; }
+  aside { width:250px; flex-shrink:0; border-right:1px solid var(--border); padding:28px 18px; display:flex; flex-direction:column; gap:6px; }
+  .logo { font-size:1.5rem; font-weight:800; margin:0 0 20px 8px; color:var(--blue); }
+  nav { display:flex; flex-direction:column; gap:8px; }
+  .nav-btn { display:flex; align-items:center; gap:12px; width:100%; background:var(--surface); border:1px solid var(--border); color:var(--text); padding:12px 14px; border-radius:12px; font-size:.98rem; font-weight:600; cursor:pointer; transition:all .2s; }
+  .nav-btn .dot { width:8px; height:8px; border-radius:50%; background:var(--blue); opacity:.35; }
+  .nav-btn:hover { border-color:var(--blue); color:var(--blue); }
+  .nav-btn.active { background:var(--blue); border-color:var(--blue); color:#fff; box-shadow:0 6px 16px rgba(37,99,235,.25); }
+  .nav-btn.active .dot { background:#fff; opacity:1; }
+  .side-foot { margin-top:auto; border-top:1px solid var(--border); padding-top:16px; display:flex; flex-direction:column; gap:10px; }
+  .lang { width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:12px; background:#fff; color:var(--text); cursor:pointer; }
+  .user-box { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .user-name { font-size:.9rem; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .logout { border:1px solid var(--border); background:#fff; border-radius:10px; padding:6px 10px; font-size:.85rem; cursor:pointer; color:var(--muted); }
+  .logout:hover { color:var(--danger); border-color:var(--danger); }
+
+  main { flex:1; padding:36px; min-width:0; }
+  .section { display:none; } .section.active { display:block; }
+  h1 { margin:0 0 20px; font-size:1.9rem; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:20px; margin-bottom:16px; }
+  .card h3 { margin:0 0 8px; font-size:1.05rem; }
+  .card p { margin:0; color:var(--muted); line-height:1.55; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; }
+  .icon { width:44px; height:44px; border-radius:12px; background:var(--blue); display:flex; align-items:center; justify-content:center; margin-bottom:14px; }
+  .icon svg { width:24px; height:24px; stroke:#fff; fill:none; stroke-width:2; }
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:16px; margin-bottom:24px; }
+  .stat { background:#fff; border:1px solid var(--border); border-radius:16px; padding:18px; }
+  .stat b { display:block; font-size:1.6rem; color:var(--blue); }
+  .stat span { font-size:.85rem; color:var(--muted); }
+  .tag { display:inline-block; font-size:.75rem; font-weight:700; color:var(--blue); background:#dbeafe; padding:4px 10px; border-radius:999px; margin-bottom:10px; }
+  .search { margin-bottom:16px; }
+  .opt { display:block; width:100%; margin:8px 0; padding:13px 16px; border:1px solid var(--border); background:#fff; color:var(--text); border-radius:12px; cursor:pointer; text-align:left; font-size:1rem; font-weight:500; transition:all .2s; }
+  .opt:hover:not(:disabled) { border-color:var(--blue); color:var(--blue); }
+  .opt.right { border-color:var(--ok); background:#f0fdf4; color:var(--ok); }
+  .opt.wrong { border-color:var(--danger); background:#fef2f2; color:var(--danger); }
+  .result { font-weight:700; margin-top:12px; color:var(--blue); min-height:1.2em; }
+  .btn-sm { margin-top:12px; padding:10px 18px; border:0; border-radius:10px; background:var(--blue); color:#fff; font-weight:600; cursor:pointer; }
+  .progress { height:8px; background:var(--border); border-radius:8px; overflow:hidden; margin-bottom:14px; }
+  .progress div { height:100%; background:var(--blue); transition:width .3s; }
+
+  @media (max-width:700px) {
+    #app { flex-direction:column; }
+    aside { width:100%; padding:14px; border-right:0; border-bottom:1px solid var(--border); }
+    .logo { margin:0 0 10px 4px; }
+    nav { flex-direction:row; overflow-x:auto; }
+    .nav-btn { width:auto; white-space:nowrap; }
+    .side-foot { display:none; }
+    main { padding:20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div id="auth">
+  <div class="auth-card">
+    <div class="auth-logo">EziSPorts</div>
+    <p class="auth-sub" data-i18n="tagline"></p>
+    <div class="tabs">
+      <button class="tab active" data-tab="login" data-i18n="login"></button>
+      <button class="tab" data-tab="register" data-i18n="register"></button>
+    </div>
+
+    <form id="login-form" novalidate>
+      <label data-i18n="email"></label>
+      <input id="l-email" type="email" autocomplete="email" required>
+      <label data-i18n="password"></label>
+      <input id="l-pass" type="password" autocomplete="current-password" required>
+      <button class="btn" type="submit" data-i18n="login"></button>
+      <div class="msg" id="l-msg"></div>
+    </form>
+
+    <form id="register-form" class="hidden" novalidate>
+      <label data-i18n="name"></label>
+      <input id="r-name" type="text" autocomplete="name" required>
+      <label data-i18n="email"></label>
+      <input id="r-email" type="email" autocomplete="email" required>
+      <label data-i18n="password"></label>
+      <input id="r-pass" type="password" autocomplete="new-password" required>
+      <div class="meter"><div id="r-meter"></div></div>
+      <div class="hint" data-i18n="pwdHint"></div>
+      <label data-i18n="confirmPass"></label>
+      <input id="r-pass2" type="password" autocomplete="new-password" required>
+      <button class="btn" type="submit" data-i18n="register"></button>
+      <div class="msg" id="r-msg"></div>
+    </form>
+
+    <div class="secure">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+      <span data-i18n="secure"></span>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" class="hidden">
+  <aside>
+    <div class="logo">EziSPorts</div>
+    <nav>
+      <button class="nav-btn active" data-target="home"><span class="dot"></span><span data-i18n="navHome"></span></button>
+      <button class="nav-btn" data-target="topics"><span class="dot"></span><span data-i18n="navTopics"></span></button>
+      <button class="nav-btn" data-target="news"><span class="dot"></span><span data-i18n="navNews"></span></button>
+      <button class="nav-btn" data-target="quiz"><span class="dot"></span><span data-i18n="navQuiz"></span></button>
+      <button class="nav-btn hidden" id="dev-nav" data-target="dev"><span class="dot"></span><span data-i18n="navDev"></span></button>
+    </nav>
+    <div class="side-foot">
+      <select class="lang" id="lang-select" aria-label="Language">
+        <option value="uz">O'zbek</option>
+        <option value="ru">Русский</option>
+        <option value="en">English</option>
+        <option value="tr">Türkçe</option>
+        <option value="kk">Қазақша</option>
+        <option value="de">Deutsch</option>
+        <option value="fr">Français</option>
+      </select>
+      <div class="user-box">
+        <span class="user-name" id="user-name"></span>
+        <button class="logout" id="logout" data-i18n="logout"></button>
+      </div>
+    </div>
+  </aside>
+
+  <main>
+    <section id="home" class="section active">
+      <h1 data-i18n="homeTitle"></h1>
+      <div class="stats">
+        <div class="stat"><b>12</b><span data-i18n="statLeagues"></span></div>
+        <div class="stat"><b>240+</b><span data-i18n="statTeams"></span></div>
+        <div class="stat"><b>1 200</b><span data-i18n="statPlayers"></span></div>
+      </div>
+      <div class="grid" id="home-cards"></div>
+    </section>
+
+    <section id="topics" class="section">
+      <h1 data-i18n="navTopics"></h1>
+      <div class="grid" id="topic-cards"></div>
+    </section>
+
+    <section id="news" class="section">
+      <h1 data-i18n="navNews"></h1>
+      <input class="search" type="search" id="news-search" data-i18n-ph="searchPh">
+      <div id="news-list"></div>
+    </section>
+
+    <section id="quiz" class="section">
+      <h1 data-i18n="navQuiz"></h1>
+      <div class="card">
+        <div class="progress"><div id="q-bar"></div></div>
+        <span class="tag" id="q-tag"></span>
+        <h3 id="q-text"></h3>
+        <div id="q-options"></div>
+        <div class="result" id="q-result"></div>
+        <button class="btn-sm hidden" id="q-next"></button>
+      </div>
+    </section>
+
+    <section id="dev" class="section">
+      <h1 data-i18n="devTitle"></h1>
+      <div class="stats"><div class="stat"><b id="dev-count">0</b><span data-i18n="devUsers"></span></div></div>
+      <div id="dev-users"></div>
+    </section>
+  </main>
+</div>
+
+<script>
+/* ===== 7 languages ===== */
+const T = {
+uz: { tagline:"Sport olamining eng so'nggi yangiliklari", login:"Kirish", register:"Ro'yxatdan o'tish", email:"Email", password:"Parol", name:"Ism", confirmPass:"Parolni tasdiqlang", pwdHint:"Kamida 8 belgi, katta harf, raqam va belgi", secure:"Parollar shifrlangan holda saqlanadi", logout:"Chiqish",
+  navHome:"Bosh sahifa", navTopics:"Mavzular", navNews:"Yangiliklar", navQuiz:"SportQuizs", navDev:"Developer panel", homeTitle:"EziSPorts ga xush kelibsiz", statLeagues:"Faol liga", statTeams:"Jamoa", statPlayers:"O'yinchi profili", searchPh:"Yangiliklarni qidirish...", devTitle:"Developer panel", devUsers:"Ro'yxatdan o'tgan foydalanuvchi", roleDev:"Developer", roleUser:"Foydalanuvchi", correct:"To'g'ri javob!", wrong:"Noto'g'ri javob", next:"Keyingi savol", finish:"Yakun", scoreTxt:"Natija", restart:"Qayta boshlash", qLabel:"Savol",
+  eName:"Ismingizni kiriting", eEmail:"Email noto'g'ri", eWeak:"Parol talablarga javob bermaydi", eMatch:"Parollar mos emas", eExists:"Bu email allaqachon ro'yxatdan o'tgan", eOk:"Muvaffaqiyatli! Endi kirishingiz mumkin.", eWrong:"Email yoki parol noto'g'ri", eLock:"Juda ko'p urinish. 1 daqiqadan so'ng qayta urining",
+  topics:[["Futbol","Chempionatlar, transferlar va taktika tahlillari.","Jamoa"],["Basketbol","Liga o'yinlari va jamoa statistikasi.","Liga"],["Tennis","Grand Slam turnirlari va reytinglar.","Turnir"],["Kurash","Milliy va xalqaro musobaqalar.","Yakka"],["Suzish","Rekordlar va yirik startlar.","Rekord"],["Shaxmat","Turnirlar, o'yinlar va strategiya.","Aql"],["Voleybol","Jamoaviy o'yin, turnirlar va natijalar.","Jamoa"],["Boks","Ring, jahon chempionatlari va reytinglar.","Yakka"],["Formula 1","Poygalar, pilotlar va jamoalar reytingi.","Poyga"],["Xokkey","Muz ustidagi jamoaviy o'yin va NHL yangiliklari.","Jamoa"]],
+  news:[["Beysbol · 12.11.2026","AL va NL: yilning eng yaxshi relyef chiquvchilari","Toronto'dan Louis Varland AL, San-Diegodan Mason Miller NL bo'yicha mukofotga sazovor bo'ldi."],["Kollej sporti · 10.11.2026","Tennessi o'yinchilari jamoaviy shartnoma modelini ishlab chiqdi","Kollej sportchilari kollektiv shartnoma loyihasini taklif qildi."],["Xokkey · 12.11.2026","Capitals Hurricanes ustidan 4:1 hisobida g'alaba qozondi","Vashington o'yin davomida janjal bilan 4:1 hisobida g'alaba qozondi."],["Futbol · 14.11.2026","Ronaldo uchun FIFA jazosi hali aniqlanmagan","Kristiano Ronaldo qizil kartochka uchun FIFA qaroriga taxminan 3 hafta kutishi mumkin."],["Mavsum","Yangi mavsum boshlandi","Yetakchi ligalarda yangi mavsum start oldi."],["Transfer","Transfer oynasi","Yirik klublar yangi o'yinchilar bilan muzokara olib bormoqda."],["Terma jamoa","Milliy jamoa tayyorgarligi","Terma jamolar musobaqalar oldidan tayyorgarlikni kuchaytirdi."]],
+  quiz:[["Futbolda bir jamoada nechta o'yinchi maydonda bo'ladi?",["9 ta","11 ta","12 ta","10 ta"],1],["Basketbolda bir jamoa maydonda nechta o'yinchi bo'ladi?",["5 ta","6 ta","7 ta","4 ta"],0],["Olimpiya o'yinlari necha yilda bir o'tkaziladi?",["2 yil","3 yil","4 yil","5 yil"],2]],
+  home:[["Futbol","Ligalar, jamoalar va o'yinchilar haqida to'liq ma'lumot."],["Basketbol","NBA va jahon basketboli yangiliklari."],["Tennis","Turnirlar, reytinglar va yetakchi sportchilar."]] },
+ru: { tagline:"Последние новости мира спорта", login:"Вход", register:"Регистрация", email:"Email", password:"Пароль", name:"Имя", confirmPass:"Подтвердите пароль", pwdHint:"Минимум 8 символов, заглавная буква, цифра и символ", secure:"Пароли хранятся в зашифрованном виде", logout:"Выход",
+  navHome:"Главная", navTopics:"Темы", navNews:"Новости", navQuiz:"SportQuizs", navDev:"Панель разработчика", homeTitle:"Добро пожаловать в EziSPorts", statLeagues:"Активных лиг", statTeams:"Команд", statPlayers:"Профилей игроков", searchPh:"Поиск новостей...", devTitle:"Панель разработчика", devUsers:"Зарегистрированных пользователей", roleDev:"Разработчик", roleUser:"Пользователь", correct:"Правильный ответ!", wrong:"Неправильный ответ", next:"Следующий вопрос", finish:"Итог", scoreTxt:"Результат", restart:"Начать заново", qLabel:"Вопрос",
+  eName:"Введите имя", eEmail:"Неверный email", eWeak:"Пароль не соответствует требованиям", eMatch:"Пароли не совпадают", eExists:"Этот email уже зарегистрирован", eOk:"Готово! Теперь можете войти.", eWrong:"Неверный email или пароль", eLock:"Слишком много попыток. Повторите через минуту",
+  topics:[["Футбол","Чемпионаты, трансферы и тактический анализ.","Команда"],["Баскетбол","Матчи лиги и статистика команд.","Лига"],["Теннис","Турниры Большого шлема и рейтинги.","Турнир"],["Борьба","Национальные и международные соревнования.","Единоборства"],["Плавание","Рекорды и крупные старты.","Рекорд"],["Шахматы","Турниры, партии и стратегия.","Интеллект"],["Волейбол","Командная игра, турниры и результаты.","Команда"],["Бокс","Ринг, чемпионаты мира и рейтинги.","Единоборства"],["Формула-1","Гонки, пилоты и рейтинг команд.","Гонки"],["Хоккей","Командная игра на льду и новости НХЛ.","Команда"]],
+  news:[["Бейсбол · 12.11.2026","Лучшие реливеры года в AL и NL","Луис Варланд из Торонто признан лучшим в AL, Мейсон Миллер из Сан-Диего — в NL."],["Студенческий спорт · 10.11.2026","Игроки Теннесси разработали модель коллективного договора","Игроки колледжей предложили подробное коллективное соглашение для студенческого спорта."],["Хоккей · 12.11.2026","Capitals обыграли Hurricanes со счетом 4:1","«Вашингтон» победил «Каролину» 4:1, но матч завершился дракой."],["Футбол · 14.11.2026","Решение FIFA по Роналду ожидается","Кристиано Роналду, вероятно, ждать около трех недель решения о длине дисквалификации."],["Сезон","Новый сезон начался","В ведущих лигах стартовал новый сезон."],["Трансфер","Трансферное окно","Крупные клубы ведут переговоры о новых игроках."],["Сборная","Подготовка сборной","Национальные команды усилили подготовку к турнирам."]],
+  quiz:[["Сколько игроков одной команды находятся на поле в футболе?",["9","11","12","10"],1],["Сколько игроков одной команды на площадке в баскетболе?",["5","6","7","4"],0],["Как часто проводятся Олимпийские игры?",["Раз в 2 года","Раз в 3 года","Раз в 4 года","Раз в 5 лет"],2]],
+  home:[["Футбол","Лиги, команды и игроки в полном объеме."],["Баскетбол","Новости NBA и мирового баскетбола."],["Теннис","Турниры, рейтинги и ведущие спортсмены."]] },
+en: { tagline:"The latest news from the world of sport", login:"Log in", register:"Sign up", email:"Email", password:"Password", name:"Name", confirmPass:"Confirm password", pwdHint:"At least 8 characters, an uppercase letter, a number and a symbol", secure:"Passwords are stored encrypted", logout:"Log out",
+  navHome:"Home", navTopics:"Topics", navNews:"News", navQuiz:"SportQuizs", navDev:"Developer panel", homeTitle:"Welcome to EziSPorts", statLeagues:"Active leagues", statTeams:"Teams", statPlayers:"Player profiles", searchPh:"Search news...", devTitle:"Developer panel", devUsers:"Registered users", roleDev:"Developer", roleUser:"User", correct:"Correct!", wrong:"Wrong answer", next:"Next question", finish:"Finish", scoreTxt:"Score", restart:"Start over", qLabel:"Question",
+  eName:"Please enter your name", eEmail:"Invalid email", eWeak:"Password does not meet the requirements", eMatch:"Passwords do not match", eExists:"This email is already registered", eOk:"Success! You can log in now.", eWrong:"Invalid email or password", eLock:"Too many attempts. Try again in a minute",
+  topics:[["Football","Championships, transfers and tactical analysis.","Team"],["Basketball","League games and team statistics.","League"],["Tennis","Grand Slam tournaments and rankings.","Tournament"],["Wrestling","National and international competitions.","Combat"],["Swimming","Records and major starts.","Record"],["Chess","Tournaments, games and strategy.","Mind"],["Volleyball","Team play, tournaments and results.","Team"],["Boxing","The ring, world championships and rankings.","Combat"],["Formula 1","Races, drivers and team standings.","Racing"],["Hockey","Team play on ice and NHL news.","Team"]],
+  news:[["Baseball · Nov 12, 2026","Top relievers in AL and NL named","Toronto's Louis Varland won the AL Reliever of the Year award and San Diego's Mason Miller won the NL honor."],["College sports · Nov 10, 2026","Tennessee players co-design a bargaining model","College athletes and Tennessee basketball players proposed a detailed collective-bargaining agreement for college sports."],["Hockey · Nov 12, 2026","Capitals beat Hurricanes 4-1","Washington beat Carolina 4-1, but the game ended with a melee."],["Football · Nov 14, 2026","Ronaldo's FIFA ban decision still pending","Cristiano Ronaldo likely faces a three-week wait to learn the length of his FIFA ban after a red card."],["Season","A new season has begun","A new season started across the leading leagues."],["Transfers","Transfer window","Major clubs are negotiating with new players."],["National team","National team preparation","National squads stepped up training before the tournaments."]],
+  quiz:[["How many players from one team are on the pitch in football?",["9","11","12","10"],1],["How many players from one team are on court in basketball?",["5","6","7","4"],0],["How often are the Olympic Games held?",["Every 2 years","Every 3 years","Every 4 years","Every 5 years"],2]],
+  home:[["Football","Full information on leagues, teams and players."],["Basketball","NBA and world basketball news."],["Tennis","Tournaments, rankings and top athletes."]] },
+tr: { tagline:"Spor dünyasının en güncel haberleri", login:"Giriş", register:"Kayıt ol", email:"E-posta", password:"Şifre", name:"Ad", confirmPass:"Şifreyi onayla", pwdHint:"En az 8 karakter, büyük harf, rakam ve sembol", secure:"Şifreler şifreli olarak saklanır", logout:"Çıkış",
+  navHome:"Ana sayfa", navTopics:"Konular", navNews:"Haberler", navQuiz:"SportQuizs", navDev:"Geliştirici paneli", homeTitle:"EziSPorts'a hoş geldiniz", statLeagues:"Aktif lig", statTeams:"Takım", statPlayers:"Oyuncu profili", searchPh:"Haber ara...", devTitle:"Geliştirici paneli", devUsers:"Kayıtlı kullanıcı", roleDev:"Geliştirici", roleUser:"Kullanıcı", correct:"Doğru cevap!", wrong:"Yanlış cevap", next:"Sonraki soru", finish:"Bitti", scoreTxt:"Skor", restart:"Yeniden başla", qLabel:"Soru",
+  eName:"Adınızı girin", eEmail:"Geçersiz e-posta", eWeak:"Şifre gereksinimleri karşılamıyor", eMatch:"Şifreler eşleşmiyor", eExists:"Bu e-posta zaten kayıtlı", eOk:"Başarılı! Artık giriş yapabilirsiniz.", eWrong:"E-posta veya şifre hatalı", eLock:"Çok fazla deneme. Bir dakika sonra tekrar deneyin",
+  topics:[["Futbol","Şampiyonalar, transferler ve taktik analizler.","Takım"],["Basketbol","Lig maçları ve takım istatistikleri.","Lig"],["Tenis","Grand Slam turnuvaları ve sıralamalar.","Turnuva"],["Güreş","Ulusal ve uluslararası yarışmalar.","Dövüş"],["Yüzme","Rekorlar ve büyük startlar.","Rekor"],["Satranç","Turnuvalar, oyunlar ve strateji.","Zeka"],["Voleybol","Takım oyunu, turnuvalar ve sonuçlar.","Takım"],["Boks","Ring, dünya şampiyonaları ve sıralamalar.","Dövüş"],["Formula 1","Yarışlar, pilotlar ve takım sıralaması.","Yarış"],["Buz hokeyi","Buz üzerinde takım oyunu ve NHL haberleri.","Takım"]],
+  news:[["Üniversite sporu · 10.11.2026","Tennessee oyuncuları toplu sözleşme modeli hazırladı","Üniversite sporcuları, Tennessee basketbol oyuncularıyla birlikte kapsamlı bir toplu sözleşme önerdi."],["Beyzbol · 12.11.2026","AL ve NL'nin en iyi relief oyuncuları","Toronto'dan Louis Varland AL, San Diego'dan Mason Miller NL'de yılın relief oyuncusu ödülünü kazandı."],["Buz hokeyi · 12.11.2026","Capitals, Hurricanes'i 4-1 yendi","Washington, Carolina'yı 4-1 yendi; maç bir kavgayla bitti."],["Futbol · 14.11.2026","Ronaldo'nun FIFA cezası için karar bekleniyor","Cristiano Ronaldo, kırmızı kart nedeniyle cezanın süresini öğrenmek için yaklaşık üç hafta bekleyebilir."],["Sezon","Yeni sezon başladı","Önde gelen liglerde yeni sezon start aldı."],["Transfer","Transfer dönemi","Büyük kulüpler yeni oyuncularla görüşmeler yapıyor."],["Milli takım","Milli takım hazırlığı","Milli takımlar turnuvalar öncesi hazırlığı artırdı."]],
+  quiz:[["Futbolda bir takımdan kaç oyuncu sahada olur?",["9","11","12","10"],1],["Basketbolda bir takımdan kaç oyuncu sahadadır?",["5","6","7","4"],0],["Olimpiyat Oyunları kaç yılda bir yapılır?",["2 yılda bir","3 yılda bir","4 yılda bir","5 yılda bir"],2]],
+  home:[["Futbol","Ligler, takımlar ve oyuncular hakkında tam bilgi."],["Basketbol","NBA ve dünya basketbolu haberleri."],["Tenis","Turnuvalar, sıralamalar ve önde gelen sporcular."]] },
+kk: { tagline:"Спорт әлемінің ең соңғы жаңалықтары", login:"Кіру", register:"Тіркелу", email:"Email", password:"Құпиясөз", name:"Аты", confirmPass:"Құпиясөзді растаңыз", pwdHint:"Кемінде 8 таңба, бас әріп, цифр және белгі", secure:"Құпиясөздер шифрланған түрде сақталады", logout:"Шығу",
+  navHome:"Басты бет", navTopics:"Тақырыптар", navNews:"Жаңалықтар", navQuiz:"SportQuizs", navDev:"Developer панелі", homeTitle:"EziSPorts-қа қош келдіңіз", statLeagues:"Белсенді лига", statTeams:"Команда", statPlayers:"Ойыншы профилі", searchPh:"Жаңалық іздеу...", devTitle:"Developer панелі", devUsers:"Тіркелген пайдаланушы", roleDev:"Developer", roleUser:"Пайдаланушы", correct:"Дұрыс жауап!", wrong:"Қате жауап", next:"Келесі сұрақ", finish:"Аяқтау", scoreTxt:"Нәтиже", restart:"Қайта бастау", qLabel:"Сұрақ",
+  eName:"Атыңызды енгізіңіз", eEmail:"Email дұрыс емес", eWeak:"Құпиясөз талаптарға сай емес", eMatch:"Құпиясөздер сәйкес келмейді", eExists:"Бұл email бұрын тіркелген", eOk:"Сәтті! Енді кіре аласыз.", eWrong:"Email немесе құпиясөз қате", eLock:"Тым көп әрекет. Бір минуттан кейін қайталаңыз",
+  topics:[["Футбол","Чемпионаттар, трансферлер және тактикалық талдау.","Команда"],["Баскетбол","Лига ойындары және команда статистикасы.","Лига"],["Теннис","Гранд-слэм турнирлері және рейтингтер.","Турнир"],["Күрес","Ұлттық және халықаралық жарыстар.","Жекпе-жек"],["Жүзу","Рекордтар және ірі старттар.","Рекорд"],["Шахмат","Турнирлер, ойындар және стратегия.","Ой"],["Волейбол","Командалық ойын, турнирлер және нәтижелер.","Команда"],["Бокс","Ринг, әлем чемпионаттары және рейтингтер.","Жекпе-жек"],["Формула-1","Жарыстар, жүргізушілер және команда рейтингі.","Жарыс"],["Хоккей","Мұздағы командалық ойын және NHL жаңалықтары.","Команда"]],
+  news:[["Маусым","Жаңа маусым басталды","Жетекші лигаларда жаңа маусым басталды."],["Трансфер","Трансфер терезесі","Iri клубтар жаңа ойыншылармен келіссөз жүргізуде."],["Құрама команда","Құрама команда дайындығы","Құрама командалар жарыстар алдында дайындықты күшейтті."]],
+  quiz:[["Футболда бір командадан алаңда неше ойыншы болады?",["9","11","12","10"],1],["Баскетболда бір командадан алаңда неше ойыншы болады?",["5","6","7","4"],0],["Олимпиада ойындары неше жылда бір өткізіледі?",["2 жылда бір","3 жылда бір","4 жылда бір","5 жылда бір"],2]],
+  home:[["Футбол","Лигалар, командалар және ойыншылар туралы толық ақпарат."],["Баскетбол","NBA және әлемдік баскетбол жаңалықтары."],["Теннис","Турнирлер, рейтингтер және үздік спортшылар."]] },
+de: { tagline:"Die neuesten Nachrichten aus der Sportwelt", login:"Anmelden", register:"Registrieren", email:"E-Mail", password:"Passwort", name:"Name", confirmPass:"Passwort bestätigen", pwdHint:"Mindestens 8 Zeichen, Großbuchstabe, Zahl und Sonderzeichen", secure:"Passwörter werden verschlüsselt gespeichert", logout:"Abmelden",
+  navHome:"Startseite", navTopics:"Themen", navNews:"Nachrichten", navQuiz:"SportQuizs", navDev:"Entwickler-Panel", homeTitle:"Willkommen bei EziSPorts", statLeagues:"Aktive Ligen", statTeams:"Teams", statPlayers:"Spielerprofile", searchPh:"Nachrichten suchen...", devTitle:"Entwickler-Panel", devUsers:"Registrierte Nutzer", roleDev:"Entwickler", roleUser:"Nutzer", correct:"Richtig!", wrong:"Falsche Antwort", next:"Nächste Frage", finish:"Ende", scoreTxt:"Ergebnis", restart:"Neu starten", qLabel:"Frage",
+  eName:"Bitte Namen eingeben", eEmail:"Ungültige E-Mail", eWeak:"Passwort erfüllt die Anforderungen nicht", eMatch:"Passwörter stimmen nicht überein", eExists:"Diese E-Mail ist bereits registriert", eOk:"Erfolgreich! Sie können sich jetzt anmelden.", eWrong:"E-Mail oder Passwort falsch", eLock:"Zu viele Versuche. Bitte in einer Minute erneut versuchen",
+  topics:[["Fußball","Meisterschaften, Transfers und Taktikanalysen.","Team"],["Basketball","Ligaspiele und Teamstatistiken.","Liga"],["Tennis","Grand-Slam-Turniere und Rankings.","Turnier"],["Ringen","Nationale und internationale Wettkämpfe.","Kampf"],["Schwimmen","Rekorde und große Starts.","Rekord"],["Schach","Turniere, Partien und Strategie.","Verstand"],["Volleyball","Mannschaftsspiel, Turniere und Ergebnisse.","Team"],["Boxen","Ring, Weltmeisterschaften und Rankings.","Kampf"],["Formel 1","Rennen, Fahrer und Teamwertung.","Rennsport"],["Eishockey","Mannschaftsspiel auf dem Eis und NHL-Nachrichten.","Team"]],
+  news:[["Saison","Neue Saison gestartet","In den führenden Ligen hat eine neue Saison begonnen."],["Transfers","Transferfenster","Große Klubs verhandeln über neue Spieler."],["Nationalteam","Vorbereitung der Nationalmannschaft","Die Nationalteams haben das Training vor den Turnieren verstärkt."]],
+  quiz:[["Wie viele Spieler einer Mannschaft stehen im Fußball auf dem Feld?",["9","11","12","10"],1],["Wie viele Spieler einer Mannschaft sind im Basketball auf dem Feld?",["5","6","7","4"],0],["Wie oft finden die Olympischen Spiele statt?",["Alle 2 Jahre","Alle 3 Jahre","Alle 4 Jahre","Alle 5 Jahre"],2]],
+  home:[["Fußball","Alle Infos zu Ligen, Teams und Spielern."],["Basketball","NBA- und Weltbasketball-Nachrichten."],["Tennis","Turniere, Rankings und Top-Athleten."]] },
+fr: { tagline:"Les dernières actualités du monde du sport", login:"Connexion", register:"Inscription", email:"E-mail", password:"Mot de passe", name:"Nom", confirmPass:"Confirmer le mot de passe", pwdHint:"Au moins 8 caractères, une majuscule, un chiffre et un symbole", secure:"Les mots de passe sont stockés chiffrés", logout:"Déconnexion",
+  navHome:"Accueil", navTopics:"Thèmes", navNews:"Actualités", navQuiz:"SportQuizs", navDev:"Panneau développeur", homeTitle:"Bienvenue sur EziSPorts", statLeagues:"Ligues actives", statTeams:"Équipes", statPlayers:"Profils de joueurs", searchPh:"Rechercher des actualités...", devTitle:"Panneau développeur", devUsers:"Utilisateurs inscrits", roleDev:"Développeur", roleUser:"Utilisateur", correct:"Bonne réponse !", wrong:"Mauvaise réponse", next:"Question suivante", finish:"Terminer", scoreTxt:"Score", restart:"Recommencer", qLabel:"Question",
+  eName:"Veuillez saisir votre nom", eEmail:"E-mail invalide", eWeak:"Le mot de passe ne respecte pas les critères", eMatch:"Les mots de passe ne correspondent pas", eExists:"Cet e-mail est déjà inscrit", eOk:"Réussi ! Vous pouvez maintenant vous connecter.", eWrong:"E-mail ou mot de passe incorrect", eLock:"Trop de tentatives. Réessayez dans une minute",
+  topics:[["Football","Championnats, transferts et analyses tactiques.","Équipe"],["Basketball","Matchs de ligue et statistiques d'équipe.","Ligue"],["Tennis","Tournois du Grand Chelem et classements.","Tournoi"],["Lutte","Compétitions nationales et internationales.","Combat"],["Natation","Records et grands départs.","Record"],["Échecs","Tournois, parties et stratégie.","Esprit"],["Volley-ball","Jeu d'équipe, tournois et résultats.","Équipe"],["Boxe","Ring, championnats du monde et classements.","Combat"],["Formule 1","Courses, pilotes et classement des écuries.","Course"],["Hockey sur glace","Jeu d'équipe sur glace et actualités NHL.","Équipe"]],
+  news:[["Saison","Une nouvelle saison a commencé","Une nouvelle saison a débuté dans les ligues majeures."],["Transferts","Mercato","Les grands clubs négocient avec de nouveaux joueurs."],["Équipe nationale","Préparation de l'équipe nationale","Les sélections ont intensifié leur préparation avant les tournois."]],
+  quiz:[["Combien de joueurs d'une équipe sont sur le terrain au football ?",["9","11","12","10"],1],["Combien de joueurs d'une équipe sont sur le terrain au basketball ?",["5","6","7","4"],0],["Tous les combien les Jeux olympiques ont-ils lieu ?",["Tous les 2 ans","Tous les 3 ans","Tous les 4 ans","Tous les 5 ans"],2]],
+  home:[["Football","Toutes les informations sur les ligues, équipes et joueurs."],["Basketball","Actualités NBA et du basketball mondial."],["Tennis","Tournois, classements et meilleurs athlètes."]] }
+};
+
+let lang = 'uz';
+try { lang = localStorage.getItem('ezi_lang') || 'uz'; } catch {}
+if (!T[lang]) lang = 'uz';
+const t = k => (T[lang][k] !== undefined ? T[lang][k] : T.en[k]);
+
+/* ===== Security helpers ===== */
+const enc = new TextEncoder();
+const toHex = buf => [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+const randHex = n => toHex(crypto.getRandomValues(new Uint8Array(n)));
+async function hashPassword(password, saltHex) {
+  const key = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits({ name:'PBKDF2', salt:enc.encode(saltHex), iterations:210000, hash:'SHA-256' }, key, 256);
+  return toHex(bits);
+}
+const emailOk = e => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e);
+const sanitize = s => String(s).replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ===== Storage ===== */
+let memUsers = {};
+const store = {
+  get() { try { return JSON.parse(localStorage.getItem('ezi_users') || '{}'); } catch { return memUsers; } },
+  set(u) { memUsers = u; try { localStorage.setItem('ezi_users', JSON.stringify(u)); } catch {} },
+  session() { try { return localStorage.getItem('ezi_session'); } catch { return null; } },
+  setSession(e) { try { e ? localStorage.setItem('ezi_session', e) : localStorage.removeItem('ezi_session'); } catch {} }
+};
+
+/* ===== Brute-force protection ===== */
+const attempts = {};
+const locked = e => attempts[e] && attempts[e].until && Date.now() < attempts[e].until;
+function failed(e) {
+  const a = attempts[e] || { n:0 };
+  if (++a.n >= 5) { a.until = Date.now() + 60000; a.n = 0; }
+  attempts[e] = a;
+}
+
+/* ===== Language ===== */
+const ICONS = [
+  '<circle cx="12" cy="12" r="9"/><path d="M12 8l3 2.2-1.1 3.6h-3.8L9 10.2z"/>',
+  '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3v18M5.6 5.6c3.5 3.5 3.5 9.3 0 12.8M18.4 5.6c-3.5 3.5-3.5 9.3 0 12.8"/>',
+  '<circle cx="12" cy="12" r="9"/><path d="M5 4.5c3 3 3 12 0 15M19 4.5c-3 3-3 12 0 15"/>'
+];
+function renderLists() {
+  document.getElementById('home-cards').innerHTML = T[lang].home.map((h, i) =>
+    `<div class="card"><div class="icon"><svg viewBox="0 0 24 24">${ICONS[i]}</svg></div><h3>${sanitize(h[0])}</h3><p>${sanitize(h[1])}</p></div>`).join('');
+  document.getElementById('topic-cards').innerHTML = T[lang].topics.map(x =>
+    `<div class="card"><span class="tag">${sanitize(x[2])}</span><h3>${sanitize(x[0])}</h3><p>${sanitize(x[1])}</p></div>`).join('');
+  filterNews();
+  renderDev();
+}
+function applyLang(l) {
+  lang = T[l] ? l : 'uz';
+  try { localStorage.setItem('ezi_lang', lang); } catch {}
+  document.documentElement.lang = lang;
+  document.getElementById('lang-select').value = lang;
+  document.querySelectorAll('[data-i18n]').forEach(el => el.textContent = t(el.dataset.i18n));
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => el.placeholder = t(el.dataset.i18nPh));
+  renderLists();
+  renderQ();
+}
+document.getElementById('lang-select').addEventListener('change', e => applyLang(e.target.value));
+
+/* ===== News search ===== */
+function filterNews() {
+  const q = document.getElementById('news-search').value.trim().toLowerCase();
+  document.getElementById('news-list').innerHTML = T[lang].news
+    .filter(n => !q || (n[0] + n[1] + n[2]).toLowerCase().includes(q))
+    .map(n => `<div class="card"><span class="tag">${sanitize(n[0])}</span><h3>${sanitize(n[1])}</h3><p>${sanitize(n[2])}</p></div>`).join('');
+}
+document.getElementById('news-search').addEventListener('input', filterNews);
+
+/* ===== Auth UI ===== */
+document.querySelectorAll('.tab').forEach(tb => tb.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x === tb));
+  document.getElementById('login-form').classList.toggle('hidden', tb.dataset.tab !== 'login');
+  document.getElementById('register-form').classList.toggle('hidden', tb.dataset.tab !== 'register');
+}));
+const rPass = document.getElementById('r-pass');
+rPass.addEventListener('input', () => {
+  const p = rPass.value;
+  const s = (p.length >= 8) + /[A-Z]/.test(p) + /[0-9]/.test(p) + /[^A-Za-z0-9]/.test(p);
+  const m = document.getElementById('r-meter');
+  m.style.width = (s / 4 * 100) + '%';
+  m.style.background = ['#dc2626','#f59e0b','#eab308','#16a34a'][Math.max(0, s - 1)];
+});
+const showMsg = (id, key, ok) => { const el = document.getElementById(id); el.textContent = t(key); el.className = 'msg ' + (ok ? 'ok' : 'err'); };
+
+document.getElementById('register-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const name = document.getElementById('r-name').value.trim();
+  const email = document.getElementById('r-email').value.trim().toLowerCase();
+  const pass = rPass.value;
+  if (name.length < 2) return showMsg('r-msg', 'eName');
+  if (!emailOk(email)) return showMsg('r-msg', 'eEmail');
+  if (pass.length < 8 || !/[A-Z]/.test(pass) || !/[0-9]/.test(pass) || !/[^A-Za-z0-9]/.test(pass)) return showMsg('r-msg', 'eWeak');
+  if (pass !== document.getElementById('r-pass2').value) return showMsg('r-msg', 'eMatch');
+  const users = store.get();
+  if (users[email]) return showMsg('r-msg', 'eExists');
+  const salt = randHex(16);
+  users[email] = { name: sanitize(name), role: 'user', salt, hash: await hashPassword(pass, salt) };
+  store.set(users);
+  showMsg('r-msg', 'eOk', true);
+  e.target.reset();
+  document.getElementById('r-meter').style.width = '0';
+});
+
+document.getElementById('login-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const email = document.getElementById('l-email').value.trim().toLowerCase();
+  const pass = document.getElementById('l-pass').value;
+  if (locked(email)) return showMsg('l-msg', 'eLock');
+  const users = store.get();
+  if (!users.karimovdev) {
+    const s = randHex(16);
+    users.karimovdev = { name:'Karimov Dev', role:'developer', salt:s, hash: await hashPassword('karimov2424', s) };
+    store.set(users);
+  }
+  const u = users[email];
+  const hash = u ? await hashPassword(pass, u.salt) : await hashPassword(pass, randHex(16));
+  if (!u || hash !== u.hash) { failed(email); return showMsg('l-msg', 'eWrong'); }
+  delete attempts[email];
+  store.setSession(email);
+  enterApp(u);
+  e.target.reset();
+});
+
+/* ===== App ===== */
+function renderDev() {
+  const users = Object.entries(store.get());
+  document.getElementById('dev-count').textContent = users.length;
+  document.getElementById('dev-users').innerHTML = users.map(([e, u]) =>
+    `<div class="card"><h3>${sanitize(u.name)}</h3><p>${sanitize(e)} · ${u.role === 'developer' ? t('roleDev') : t('roleUser')}</p></div>`).join('');
+}
+function enterApp(u) {
+  document.getElementById('user-name').textContent = u.name;
+  document.getElementById('dev-nav').classList.toggle('hidden', u.role !== 'developer');
+  document.getElementById('auth').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  renderLists();
+}
+document.getElementById('logout').addEventListener('click', () => {
+  store.setSession(null);
+  document.getElementById('app').classList.add('hidden');
+  document.getElementById('auth').classList.remove('hidden');
+});
+const navBtns = document.querySelectorAll('.nav-btn');
+navBtns.forEach(b => b.addEventListener('click', () => {
+  navBtns.forEach(x => x.classList.toggle('active', x === b));
+  document.querySelectorAll('.section').forEach(s => s.classList.toggle('active', s.id === b.dataset.target));
+}));
+
+/* ===== Quiz ===== */
+let qi = 0, score = 0, answered = false;
+function renderQ() {
+  const total = T[lang].quiz.length;
+  const box = document.getElementById('q-options');
+  const next = document.getElementById('q-next');
+  document.getElementById('q-result').textContent = '';
+  if (qi >= total) {
+    document.getElementById('q-bar').style.width = '100%';
+    document.getElementById('q-tag').textContent = t('finish');
+    document.getElementById('q-text').textContent = t('scoreTxt') + ': ' + score + ' / ' + total;
+    box.innerHTML = '';
+    next.textContent = t('restart');
+    next.classList.remove('hidden');
+    return;
+  }
+  const q = T[lang].quiz[qi];
+  document.getElementById('q-bar').style.width = (qi / total * 100) + '%';
+  document.getElementById('q-tag').textContent = t('qLabel') + ' ' + (qi + 1) + ' / ' + total;
+  document.getElementById('q-text').textContent = q[0];
+  answered = false;
+  next.classList.add('hidden');
+  box.innerHTML = '';
+  q[1].forEach((txt, i) => {
+    const b = document.createElement('button');
+    b.className = 'opt';
+    b.textContent = txt;
+    b.onclick = () => {
+      if (answered) return;
+      answered = true;
+      const ok = i === q[2];
+      if (ok) score++;
+      b.classList.add(ok ? 'right' : 'wrong');
+      box.children[q[2]].classList.add('right');
+      document.getElementById('q-result').textContent = ok ? t('correct') : t('wrong');
+      next.textContent = t('next');
+      next.classList.remove('hidden');
+    };
+    box.appendChild(b);
+  });
+}
+document.getElementById('q-next').addEventListener('click', () => {
+  if (qi >= T[lang].quiz.length) { qi = 0; score = 0; } else { qi++; }
+  renderQ();
+});
+
+/* ===== Init ===== */
+document.getElementById('lang-select').value = lang;
+applyLang(lang);
+(function () {
+  const email = store.session();
+  const u = email && store.get()[email];
+  if (u) enterApp(u);
+})();
+</script>
+</body>
+</html>
